@@ -1,78 +1,58 @@
 from netmiko import ConnectHandler
-from netmiko.ssh_exception import NetMikoTimeoutException
+from netmiko.exceptions import NetMikoTimeoutException
 from paramiko.ssh_exception import SSHException
-from netmiko.ssh_exception import AuthenticationException
+from netmiko.exceptions import AuthenticationException
 import time
-import datetime
 import os
-import glob
-from time import gmtime, strftime
-import logging
-import threading
-import schedule
-
 
 localtime = time.localtime()
 result = time.strftime("%d-%m-%Y_%H-%M", localtime)
 zaman = time.strftime("%d-%m-%Y", localtime)
-prefix_path = ("/Backup/")
-file_array = [f for f in os.listdir(prefix_path) if f.endswith('.txt')]
-file_array.sort()  # file is sorted list
-file_array = [os.path.join(prefix_path, name) for name in file_array]
-
-directory = str(zaman)
-parent_dir = "/Error/"
-
-path = os.path.join(parent_dir, directory)
-os.mkdir(path)
-
-for filename in file_array:
-    log = open(filename, 'r')
-
-for y in log:
-    IP = y.rstrip("\n")
-    print('\n  ' + IP.strip() + ' \n')
-    RTR = {
+success_backup_dir = ("./Backup/")
+dosya = open("./InventoryList.txt", "r")
+for IP in dosya:
+    SW = {
         'ip':   IP,
-        'device_type': '[Swicth]_ios',
-        'username': '[Swicth_UserName]',
-        'password': '[Swicth_Password]',
+        'device_type': '[DEVICE_TYPE]',
+        'username': '[SWITCH_USERNAME]',
+        'password': '[SWITCH_PASSWORD]',
     }
     try:
-        net_connect = ConnectHandler(**RTR)
+        net_connect = ConnectHandler(**SW)
+    except AuthenticationException:
+        Device_Not_Aut = print('Kimlik doğrulaması onaylanmadı.')
+        not_aut_path = "./Error/Not_Aut_Backup/"
+        not_aut_time = str("Device_Not_Reach"+"_"+str(zaman)+".txt")
+        device_not_aut_file = open(
+            (os.path.join(not_aut_path))+not_aut_time, 'w')
+        device_not_aut_file.write(IP+'\n')
+        device_not_aut_file.close
+        time.sleep(2)
+        continue
     except NetMikoTimeoutException:
-        Device_Not_Reach = print('Device not reachable.')
-        z = "/Backup/Not_Reach_Backup/"
-        t = str("Device_Not_Reach"+"_"+str(zaman)+".txt")
-        device_not_reach_file = open(os.path.join(z, t), 'a')
+        Device_Not_Reach = print('Cihaza ulaşılamıyor.')
+        not_reach_path = "./Error/Not_Reach_Backup/"
+        not_reach_time = str("Device_Not_Reach"+"_"+str(zaman)+".txt")
+        device_not_reach_file = open(
+            (os.path.join(not_reach_path))+not_reach_time, 'w')
         device_not_reach_file.write(IP+'\n')
         device_not_reach_file.close
         time.sleep(2)
         continue
-    except AuthenticationException:
-        Device_Not_Reach = print('Authentication Failure.')
-        x = "/Backup/Not_Auth_Backup/"
-        y = str("Device_Not_Auth"+"_"+str(zaman)+".txt")
-        device_not_auth_file = open(os.path.join(x, y), 'a')
-        device_not_auth_file.write(IP+'\n')
-        device_not_auth_file.close
-        time.sleep(2)
-        continue
     except SSHException:
         Device_Success = print('Initiating config backup')
-        p = "/Backup/Success Backup/"
-        r = str("Device_Success"+"_"+str(zaman)+".txt")
-        device_success_file = open(os.path.join(p, r), 'a')
+        success_path = "./Error/Success_Backup/"
+        success_time = str("Device_Success"+"_"+str(zaman)+".txt")
+        device_success_file = open(
+            (os.path.join(success_path))+success_time, 'w')
         device_success_file.write(IP+'\n')
         device_success_file.close
         continue
     print('Initiating config backup')
     output = net_connect.send_command('show run')
 
-    # Name of text file coerced with +.txt
-    name = str('RTR_'+IP+'_'+str(result))
-    SAVE_FILE = open(os.path.join(path, name), 'w')
-    # SAVE_FILE = open("RTR_"+IP+'_'str(result), 'w')
+    name = str('RTR_'+IP+'_'+str(result)+".txt")
+    SAVE_FILE = open(os.path.join(success_backup_dir, name), 'w')
     SAVE_FILE.write(output)
     SAVE_FILE.close
     print('Finished config backup')
