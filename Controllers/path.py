@@ -7,9 +7,9 @@ class Paths(Enum):
     BACKUP_DIR = os.path.join(ROOT_DIR, 'Backup')
     ERROR_DIR = os.path.join(ROOT_DIR, 'Error')
     INVENTORY_DIR = os.path.join(ROOT_DIR, 'InventoryList.txt')
-    NOT_AUT_BACKUP_DIR = os.path.join(ROOT_DIR.value, 'Not_Aut_Backup')
-    NOT_REACH_BACKUP_DIR = os.path.join(ROOT_DIR.value, 'Not_Reach_Backup')
-    SSH_FAILURE_DIR = os.path.join(ROOT_DIR.value, 'SSH_Failure')
+    NOT_AUT_BACKUP_DIR = os.path.join(ROOT_DIR, 'Not_Aut_Backup')
+    NOT_REACH_BACKUP_DIR = os.path.join(ROOT_DIR, 'Not_Reach_Backup')
+    SSH_FAILURE_DIR = os.path.join(ROOT_DIR, 'SSH_Failure')
 
     @classmethod
     def ROOT_PATH(cls):
