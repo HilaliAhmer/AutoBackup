@@ -28,8 +28,7 @@ for IP in dosya:
         net_connect = ConnectHandler(**SW)
     except AuthenticationException:
         not_aut_time = str("Device_Not_Reach"+"_"+str(zaman)+".txt")
-        device_not_aut_file = open(
-            (os.path.join(Paths.NOT_AUT_BACKUP_PATH()))+not_aut_time, 'w')
+        device_not_aut_file = open(os.path.join(Paths.NOT_AUT_BACKUP_PATH())+'\\'+not_aut_time, 'w')
         device_not_aut_file.write(IP+'\n')
         device_not_aut_file.close
         Device_Not_Aut = print(
@@ -39,8 +38,7 @@ for IP in dosya:
         continue
     except NetMikoTimeoutException:
         not_reach_time = str("Device_Not_Reach"+"_"+str(zaman)+".txt")
-        device_not_reach_file = open(
-            (os.path.join(Paths.NOT_REACH_BACKUP_PATH()))+not_reach_time, 'w')
+        device_not_reach_file = open(os.path.join(Paths.NOT_REACH_BACKUP_PATH())+'\\'+not_reach_time, 'w')
         device_not_reach_file.write(IP+'\n')
         device_not_reach_file.close
         Device_Not_Reach = print(
@@ -50,8 +48,7 @@ for IP in dosya:
         continue
     except SSHException:
         ssh_failure = str("Device_SSH_Failure"+"_"+str(zaman)+".txt")
-        device_ssh_failure = open(
-            (os.path.join(Paths.SSH_FAILURE_PATH()))+ssh_failure, 'w')
+        device_ssh_failure = open(os.path.join(Paths.SSH_FAILURE_PATH())+'\\'+ssh_failure, 'w')
         device_ssh_failure.write(IP+'\n')
         device_ssh_failure.close
         Device_Success = print(
@@ -60,7 +57,7 @@ for IP in dosya:
         continue
     output = net_connect.send_command('show run')
 
-    name = str('RTR_'+IP+'_'+str(result)+".txt")
+    name = str('SUCCESS_'+IP+'_'+str(result)+".txt")
     SAVE_FILE = open(os.path.join(Paths.BACKUP_PATH(), name), 'w')
     SAVE_FILE.write(output)
     SAVE_FILE.close
