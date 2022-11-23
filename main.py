@@ -13,7 +13,6 @@ just_fix_windows_console()
 localtime = time.localtime()
 result = time.strftime("%d-%m-%Y_%H-%M", localtime)
 zaman = time.strftime("%d-%m-%Y", localtime)
-
 dosya = open(Paths.INVENTORY_PATH(), "r")
 for IP in dosya:
     if (IP[-1:] == '\n'):
@@ -31,31 +30,31 @@ for IP in dosya:
     except AuthenticationException:
         not_aut_time = str("Device_Not_Reach"+"_"+str(zaman)+".txt")
         device_not_aut_file = open(os.path.join(
-            Paths.NOT_AUT_BACKUP_PATH())+'\\'+not_aut_time, 'w')
-        device_not_aut_file.write(IP+'\n')
+            Paths.NOT_AUT_BACKUP_PATH())+'\\'+not_aut_time, 'a')
+        device_not_aut_file.write(IP+' Authentication failure'+'\n')
         device_not_aut_file.close
-        Device_Not_Aut = print(colored('Kullanıcı adı veya şifre doğru değil. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(
+        Device_Not_Aut = print(colored(IP+' adresi kurulmak istenen bağlantıda kullanıcı adı veya şifre doğru değil. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(
             device_not_aut_file.name), 'red', attrs=["bold"]))
         time.sleep(2)
         continue
     except NetMikoTimeoutException:
-        not_reach_time = str("Device_Not_Reach"+"_"+str(zaman)+".txt")
+        not_reach_time = str("Device_Not_Reach"+"_"+str(zaman)+'_'+".txt")
         device_not_reach_file = open(os.path.join(
-            Paths.NOT_REACH_BACKUP_PATH())+'\\'+not_reach_time, 'w')
-        device_not_reach_file.write(IP+'\n')
+            Paths.NOT_REACH_BACKUP_PATH())+'\\'+not_reach_time, 'a')
+        device_not_reach_file.write(IP+' Request timed out.'+'\n')
         device_not_reach_file.close
-        Device_Not_Reach = print(colored('Bağlantı zaman aşımına uğradı. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(
+        Device_Not_Reach = print(colored(IP+' adresi ile bağlantı kurulurken, bağlantı zaman aşımına uğradı. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(
             device_not_reach_file.name), 'red', attrs=["bold"]))
         time.sleep(2)
         continue
     except SSHException:
         ssh_failure = str("Device_SSH_Failure"+"_"+str(zaman)+".txt")
         device_ssh_failure = open(os.path.join(
-            Paths.SSH_FAILURE_PATH())+'\\'+ssh_failure, 'w')
+            Paths.SSH_FAILURE_PATH())+'\\'+ssh_failure, 'a')
         device_ssh_failure.write(IP+'\n')
         device_ssh_failure.close
-        Device_Success = print(colored(
-            'SSH2 protokolü anlaşmasındaki başarısızlıklar veya mantık hatalarından kaynaklanan istisna oluştu. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(device_ssh_failure.name), 'red', attrs=["bold"]))
+        Device_Success = print(colored(IP+
+            ' adresi ile bağlantı kurulurken SSH2 protokolü anlaşmasındaki başarısızlıklar veya mantık hatalarından kaynaklanan istisna oluştu. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(device_ssh_failure.name), 'red', attrs=["bold"]))
         continue
     output = net_connect.send_command('show run')
 
@@ -72,4 +71,4 @@ for IP in dosya:
     SAVE_FILE = open(os.path.join(Paths.BACKUP_PATH(), name), 'w')
     SAVE_FILE.write(output)
     SAVE_FILE.close
-    print(colored('Backup başarı ile alındı..', 'green', attrs=["bold"]))
+    print(colored(IP +' - Backup başarı ile alındı..', 'green', attrs=["bold"]))
