@@ -59,7 +59,16 @@ for IP in dosya:
         continue
     output = net_connect.send_command('show run')
 
-    name = str('SUCCESS_'+IP+'_'+str(result)+".txt")
+    host=output.splitlines()
+    for h in host:
+        if h.startswith("hostname")==True:
+            hostname=""
+            hostname=h[10:-1]
+            break
+    if not hostname:
+        hostname="SUCCESS_"
+
+    name = str(hostname+'_'+IP+'_'+str(result)+".txt")
     SAVE_FILE = open(os.path.join(Paths.BACKUP_PATH(), name), 'w')
     SAVE_FILE.write(output)
     SAVE_FILE.close
