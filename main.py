@@ -62,7 +62,7 @@ for IP in dosya:
     for h in host:
         if h.startswith("hostname")==True:
             hostname=""
-            hostname=h[10:-1]
+            hostname=h[10:100]
             break
     if not hostname:
         hostname="SUCCESS_"
