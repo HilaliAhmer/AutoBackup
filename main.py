@@ -5,7 +5,7 @@ from netmiko.exceptions import NetMikoTimeoutException
 from paramiko.ssh_exception import SSHException
 from netmiko.exceptions import AuthenticationException
 from Controllers.path import Paths
-from AutoBackup.Controllers.smtpSettings import EmailConfig
+from Controllers.smtpSettings import EmailConfig
 from email.mime.text import MIMEText
 import time
 import os
