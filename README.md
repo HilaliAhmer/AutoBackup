@@ -21,3 +21,6 @@ SW = {
 Backup başlatmak için:
 
 python main.py
+
+** Email Eklentisi - 28.08.2023
+Email gönderimi yapmak için Controllers>smtpSettings.py içindeki bilgileri kendi smtp sunucunuz için doldurarak backup aldıktan sonra kendinize otomatik mail gönderimi sağlayabilirsiniz.
