@@ -5,6 +5,7 @@ import os
 class Paths(Enum):
     ROOT_DIR = os.path.abspath(os.curdir)
     BACKUP_DIR = os.path.join(ROOT_DIR, 'Backup')
+    BACKUPZIP_DIR = os.path.join(ROOT_DIR, 'BackupZIP')
     ERROR_DIR = os.path.join(ROOT_DIR, 'Error')
     INVENTORY_DIR = os.path.join(ROOT_DIR, 'InventoryList.txt')
     NOT_AUT_BACKUP_DIR = os.path.join(ERROR_DIR, 'Not_Aut_Backup')
@@ -18,6 +19,10 @@ class Paths(Enum):
     @classmethod
     def BACKUP_PATH(cls):
         return cls.BACKUP_DIR.value
+    
+    @classmethod
+    def BACKUPZIP_PATH(cls):
+        return cls.BACKUPZIP_DIR.value
 
     @classmethod
     def ERROR_PATH(cls):

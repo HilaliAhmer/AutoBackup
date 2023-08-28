@@ -7,6 +7,11 @@ from netmiko.exceptions import AuthenticationException
 from Controllers.path import Paths
 from Controllers.smtpSettings import EmailConfig
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+from Controllers.smtpSettings import EmailConfig
+import zipfile
 import time
 import os
 import smtplib
@@ -59,8 +64,9 @@ for IP in dosya:
         Device_Success = print(colored(IP+' adresi ile bağlantı kurulurken SSH2 protokolü anlaşmasındaki başarısızlıklar veya mantık hatalarından kaynaklanan istisna oluştu. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(device_ssh_failure.name), 'red', attrs=["bold"]))
         continue
     output = net_connect.send_command('show running-config')
-    #backup folder create
-    ## folder check
+  
+    #Backupları gün bazlı tuttuğumuz folderı oluşturuyoruz.
+    ## folder var mı yok mu kontrol ediyoruz.
     folderName=str(zaman)
     if not os.path.exists(os.path.join(Paths.BACKUP_PATH(), folderName)):
         os.makedirs(os.path.join(Paths.BACKUP_PATH(), folderName))
@@ -72,17 +78,49 @@ for IP in dosya:
     SAVE_FILE.close
     print(colored(IP +' - Backup başarı ile alındı..', 'green', attrs=["bold"]))
 
-# E-posta gönderme
-mesaj = MIMEText('Switch Backupları Alındı.')
-mesaj['From'] = EmailConfig.sender_email
-mesaj['To'] = EmailConfig.recipent_email
-mesaj['Subject'] = 'Switch Backupları Alındı.'
+# Kaynak klasör ve hedef zip dosyasının yolları
+zip_dosyasi_yolu = os.path.join(Paths.BACKUPZIP_PATH())
+zip_dosyasi_yolu=zip_dosyasi_yolu+'\\'+zaman+'.zip'
+# ZipFile nesnesini yazma modunda oluşturuyoruz. 
+# Bu, belirttiğimiz yolda bir .zip dosyası oluşturacak.
+with zipfile.ZipFile(zip_dosyasi_yolu, 'w') as zipf:
+    # os.walk, belirttiğimiz klasör içindeki tüm klasörleri ve dosyaları dolaşmamıza olanak tanır.
+    # Bu fonksiyon üçlü bir tuple döndürür: (klasör_adı, alt_klasorler, dosyalar)
+    for foldername, subfolders, filenames in os.walk(os.path.join(Paths.BACKUP_PATH())):
+        for filename in filenames:
+            # Her dosya için tam yolunu oluşturuyoruz
+            tam_dosya_yolu = os.path.join(foldername, filename)
+            
+            # os.path.relpath ile dosyanın sıkıştırılacak zip dosyası içerisindeki 
+            # göreceli yolunu elde ediyoruz.
+            # Bu sayede zip içerisinde orijinal klasör yapısını koruyabiliriz.
+            zip_icerisindeki_dosya_yolu = os.path.relpath(tam_dosya_yolu, os.path.join(Paths.BACKUP_PATH()))
+            
+            # Dosyayı zip'e ekliyoruz.
+            zipf.write(tam_dosya_yolu, zip_icerisindeki_dosya_yolu)
+print(colored(f"'{zip_dosyasi_yolu}' olarak sıkıştırma tamamlandı.", 'green', attrs=["bold"]))         
 
+# E-posta gönderme
+mesaj = MIMEMultipart()
+mesaj['From'] = EmailConfig.SENDER
+mesaj['To'] = ', '.join(EmailConfig.RECEIVERS)
+mesaj['Subject'] = EmailConfig.SUBJECT
+mesaj.attach(MIMEText(EmailConfig.BODY, 'plain'))
+
+with open(zip_dosyasi_yolu, 'rb') as file:
+    part = MIMEBase('application', 'octet-stream')
+    part.set_payload(file.read())
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition', 'attachment; filename="SwitchBackup_'+folderName+'.zip"')
+    mesaj.attach(part)
+text = MIMEText('Merhaba, sıkıştırılmış dosyayı ekte bulabilirsiniz.')
+mesaj.attach(text)
 try:
-    with smtplib.SMTP(EmailConfig.smtp_relay, EmailConfig.smtp_Port) as server:
+    with smtplib.SMTP(EmailConfig.SMTP_SERVER, EmailConfig.SMTP_PORT) as server:
         # TLS (güvenli bağlantı) kullanıyorsan aşağıdaki satırı etkinleştir.
         #server.starttls()
-        server.sendmail(EmailConfig.sender_email, EmailConfig.recipent_email, mesaj.as_string())
+        #server.login(EmailConfig.SMTP_USERNAME, EmailConfig.SMTP_PASSWORD)
+        server.sendmail(EmailConfig.SENDER, EmailConfig.RECEIVERS, mesaj.as_string())
     print(colored('E-posta başarıyla gönderildi!', 'green', attrs=["bold"]))
 except Exception as e:
     print(colored("E-posta gönderilirken bir hata oluştu: {e}", 'red', attrs=["bold"]))
