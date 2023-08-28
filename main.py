@@ -59,14 +59,6 @@ for IP in dosya:
         Device_Success = print(colored(IP+' adresi ile bağlantı kurulurken SSH2 protokolü anlaşmasındaki başarısızlıklar veya mantık hatalarından kaynaklanan istisna oluştu. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(device_ssh_failure.name), 'red', attrs=["bold"]))
         continue
     output = net_connect.send_command('show running-config')
-    host=output.splitlines()
-    for h in host:
-        if h.startswith("hostname")==True:
-            hostname=""
-            hostname=h[10:-1]
-            break
-    if not hostname:
-        hostname="SUCCESS_"
     #backup folder create
     ## folder check
     folderName=str(zaman)
