@@ -5,8 +5,11 @@ from netmiko.exceptions import NetMikoTimeoutException
 from paramiko.ssh_exception import SSHException
 from netmiko.exceptions import AuthenticationException
 from Controllers.path import Paths
+from AutoBackup.Controllers.smtpSettings import EmailConfig
+from email.mime.text import MIMEText
 import time
 import os
+import smtplib
 
 just_fix_windows_console()
 # loglama için zaman ayarı.
@@ -53,22 +56,41 @@ for IP in dosya:
             Paths.SSH_FAILURE_PATH())+'\\'+ssh_failure, 'a')
         device_ssh_failure.write(IP+'\n')
         device_ssh_failure.close
-        Device_Success = print(colored(IP+
-            ' adresi ile bağlantı kurulurken SSH2 protokolü anlaşmasındaki başarısızlıklar veya mantık hatalarından kaynaklanan istisna oluştu. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(device_ssh_failure.name), 'red', attrs=["bold"]))
+        Device_Success = print(colored(IP+' adresi ile bağlantı kurulurken SSH2 protokolü anlaşmasındaki başarısızlıklar veya mantık hatalarından kaynaklanan istisna oluştu. Günlüğe kaydedildi. {0} dosyasında bulabilirsiniz.'.format(device_ssh_failure.name), 'red', attrs=["bold"]))
         continue
-    output = net_connect.send_command('show run')
-
+    output = net_connect.send_command('show running-config')
     host=output.splitlines()
     for h in host:
         if h.startswith("hostname")==True:
             hostname=""
-            hostname=h[10:100]
+            hostname=h[10:-1]
             break
     if not hostname:
         hostname="SUCCESS_"
-
-    name = str(hostname+'_'+IP+'_'+str(result)+".txt")
-    SAVE_FILE = open(os.path.join(Paths.BACKUP_PATH(), name), 'w')
+    #backup folder create
+    ## folder check
+    folderName=str(zaman)
+    if not os.path.exists(os.path.join(Paths.BACKUP_PATH(), folderName)):
+        os.makedirs(os.path.join(Paths.BACKUP_PATH(), folderName))
+        print(colored(folderName +' isminde bir backup oluşturuldu..', 'green', attrs=["bold"]))
+    folderPath=os.path.join(Paths.BACKUP_PATH(), folderName)
+    backupName = str(net_connect.base_prompt+' - '+IP+' - '+str(result)+".txt")
+    SAVE_FILE = open(os.path.join(folderPath,backupName ), 'w')
     SAVE_FILE.write(output)
     SAVE_FILE.close
     print(colored(IP +' - Backup başarı ile alındı..', 'green', attrs=["bold"]))
+
+# E-posta gönderme
+mesaj = MIMEText('Switch Backupları Alındı.')
+mesaj['From'] = EmailConfig.sender_email
+mesaj['To'] = EmailConfig.recipent_email
+mesaj['Subject'] = 'Switch Backupları Alındı.'
+
+try:
+    with smtplib.SMTP(EmailConfig.smtp_relay, EmailConfig.smtp_Port) as server:
+        # TLS (güvenli bağlantı) kullanıyorsan aşağıdaki satırı etkinleştir.
+        #server.starttls()
+        server.sendmail(EmailConfig.sender_email, EmailConfig.recipent_email, mesaj.as_string())
+    print(colored('E-posta başarıyla gönderildi!', 'green', attrs=["bold"]))
+except Exception as e:
+    print(colored("E-posta gönderilirken bir hata oluştu: {e}", 'red', attrs=["bold"]))
