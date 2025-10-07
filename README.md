@@ -1,26 +1,33 @@
 # AutoBackup
 
-Ortamınızda bulunan switchlerin otomatik backuplarını aldığı bir otomasyon sistemidir.
+An automation system that takes automatic backups of the switches in your environment.
 
-Kurulum:
+## 🛠 Installation
 
+```bash
 pip install -r requirements.txt
+```
 
-main.py dosyasının içerisinde bulunan [DEVICE_TYPE] - [SWITCH_USERNAME] - [SWITCH_PASSWORD] alanlarını kendi yapınıza göre düzenlemeyi unutmayınız.
+Update the fields `[DEVICE_TYPE]`, `[SWITCH_USERNAME]`, and `[SWITCH_PASSWORD]` in the `main.py` file according to your own setup.
 
-[DEVICE_TYPE] alanı için netmiko kütüphanesinin desteklediği devicelara DEVICE_TYPE.txt dosyasından ulaşabilirsiniz.
+You can find the supported devices for `[DEVICE_TYPE]` in the `DEVICE_TYPE.txt` file, based on the devices supported by the Netmiko library.
 
+```python
 SW = {
-        'ip':   IP,
-        'device_type': '[DEVICE_TYPE]',
-        'username': '[SWITCH_USERNAME]',
-        'password': '[SWITCH_PASSWORD]',
-    }
+    'ip':   IP,
+    'device_type': '[DEVICE_TYPE]',
+    'username': '[SWITCH_USERNAME]',
+    'password': '[SWITCH_PASSWORD]',
+}
+```
 
+## ▶️ Start Backup
 
-Backup başlatmak için:
-
+```bash
 python main.py
+```
 
-** Email Eklentisi - 28.08.2023
-Email gönderimi yapmak için Controllers>smtpSettings.py içindeki bilgileri kendi smtp sunucunuz için doldurarak backup aldıktan sonra kendinize otomatik mail gönderimi sağlayabilirsiniz.
+## 📧 Email Add-on (28.08.2023)
+
+To enable email notifications after each backup, fill in your SMTP server details in `Controllers/smtpSettings.py`.  
+Once configured, the system can automatically send a backup email to you after completion.
